@@ -12,14 +12,14 @@ create, update, transition, comment on, or delete anything in Jira.
 | Tool | What it does |
 |---|---|
 | `get_issue` | Fetch one issue by key (e.g. `PROJ-123`) and save it to disk (see below). Returns the summary plus where it was saved. |
-| `search_issues` | Search issues with a JQL query; saves each matched ticket to disk too. Returns a capped list. |
+| `search_issues` | Search issues with a JQL query. Returns a capped list; **does not save anything to disk**. |
 | `get_issue_comments` | Fetch an issue's comments, newest first, as plain text. |
 | `get_attachment` | Download a single attachment by id to `_downloads/` under the data folder; returns a clickable `file://` link plus metadata. |
 
 ## Fetched tickets are saved to disk
 
-Whenever a ticket is fetched (`get_issue`, or each result of `search_issues`),
-the power writes it under the data folder:
+Whenever a ticket is fetched with `get_issue`, the power writes it under the
+data folder (`search_issues` is discovery only and saves nothing):
 
 ```
 ~/.kiro/powers/data/kiro-power-jira-cloud/
