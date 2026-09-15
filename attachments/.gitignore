@@ -1,0 +1,4 @@
+# Downloaded Jira attachments are user data, not part of the power.
+# Ignore everything here so downloads are never committed or published.
+*
+!.gitignore

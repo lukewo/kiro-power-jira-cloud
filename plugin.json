@@ -1,0 +1,18 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "jira-cloud",
+  "version": "1.0.0",
+  "description": "Read-only Jira Cloud integration over the Jira REST API v3. Exposes a local MCP server with get_issue, search_issues (JQL), and get_issue_comments so Jira ticket context can be pulled into Kiro while coding. Uses a per-user Jira API token (no Rovo credits). Strictly read-only: it never creates, updates, transitions, comments on, or otherwise modifies Jira tickets.",
+  "author": {
+    "name": "Luke Worthington"
+  },
+  "keywords": [
+    "jira",
+    "jira cloud",
+    "rest api",
+    "issues",
+    "read-only",
+    "ticket context"
+  ],
+  "license": "MIT"
+}

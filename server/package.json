@@ -1,0 +1,22 @@
+{
+  "name": "jira-cloud-mcp-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Read-only local MCP server exposing Jira Cloud REST API v3 read tools for the jira-cloud Kiro Power.",
+  "type": "module",
+  "bin": {
+    "jira-cloud-mcp-server": "src/index.js"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "license": "MIT"
+}

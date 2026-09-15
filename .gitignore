@@ -1,0 +1,4 @@
+# Server dependencies. Users install these with `npm install` (see README),
+# so they are excluded to keep the published power lean.
+# package.json and package-lock.json ARE tracked, which pins exact versions.
+server/node_modules/
