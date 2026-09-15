@@ -4,18 +4,17 @@
   "private": true,
   "description": "Read-only local MCP server exposing Jira Cloud REST API v3 read tools for the jira-cloud Kiro Power.",
   "type": "module",
-  "bin": {
-    "jira-cloud-mcp-server": "src/index.js"
-  },
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "build": "esbuild src/index.js --bundle --platform=node --format=esm --target=node18 --outfile=dist/index.js --banner:js=\"import{createRequire}from'node:module';const require=createRequire(import.meta.url);\"",
+    "start": "node dist/index.js"
   },
   "engines": {
     "node": ">=18"
   },
-  "dependencies": {
+  "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "esbuild": "^0.24.0",
     "zod": "^3.23.8"
   },
   "license": "MIT"

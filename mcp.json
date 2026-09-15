@@ -5,7 +5,7 @@
       "type": "stdio",
       "command": "node",
       "args": [
-        "${PLUGIN_ROOT}/server/src/index.js"
+        "${PLUGIN_ROOT}/server/dist/index.js"
       ]
     }
   }

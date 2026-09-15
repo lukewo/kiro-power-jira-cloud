@@ -63,16 +63,13 @@ the data folder as above.
   [corporate networks](#connection-fails-with-a-certificate-error-corporate-networks).
 - A Jira Cloud account with access to the projects you want to read.
 
+The power ships a prebuilt, self-contained server bundle
+(`server/dist/index.js`), so there is **no `npm install`** and no dependencies to
+fetch - it runs as soon as the power is installed.
+
 ## Setup
 
-### 1. Install the server's dependencies
-
-```bash
-cd server
-npm install
-```
-
-### 2. Let the server create your config file
+### 1. Let the server create your config file
 
 Just start the power. On first run the server **creates an empty config file
 automatically** at:
@@ -92,7 +89,7 @@ Open it and fill in:
 Then reconnect the jira-cloud server.
 ```
 
-### 3. Fill in your three values
+### 2. Fill in your three values
 
 Open that file and complete it:
 
@@ -107,7 +104,7 @@ Open that file and complete it:
 Create the token at
 [id.atlassian.com API tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
 
-### 4. Reconnect
+### 3. Reconnect
 
 Reconnect the `jira-cloud` server in Kiro's **MCP Servers** panel (or restart
 Kiro). The four tools become available.
@@ -168,11 +165,11 @@ validation entirely.
 ### Seeing the real error
 
 Kiro shows a short message on failure. To see the underlying cause, run the
-server directly:
+bundled server directly:
 
 ```bash
 cd server
-node src/index.js
+node dist/index.js
 ```
 
 A clean start prints `[jira-cloud] read-only MCP server started`. A
@@ -188,5 +185,21 @@ missing fields.
   credentials.
 - The server is GET-only by construction; there is no code path that writes to
   Jira.
-- Downloaded attachments are saved under `attachments/` in the power directory.
-  Clear that folder if you do not want them kept.
+- Fetched tickets and their attachments are saved under `.jira/` in your
+  workspace (git-ignored). Delete that folder any time; it is just local cache.
+
+## Building from source (maintainers)
+
+The power ships the prebuilt bundle at `server/dist/index.js`, so end users need
+nothing extra. If you change anything under `server/src/`, rebuild the bundle
+before committing:
+
+```bash
+cd server
+npm install   # one-time, installs build-time dependencies
+npm run build # regenerates server/dist/index.js
+```
+
+The build uses esbuild to produce a single self-contained ESM file. Runtime
+dependencies are bundled in, which is why they live under `devDependencies` and
+`node_modules` is not shipped.
