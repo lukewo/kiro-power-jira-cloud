@@ -75,7 +75,9 @@ server.registerTool(
     title: "Get Jira issue",
     description:
       "Fetch a single Jira issue by key (e.g. PROJ-123) and return a compact summary " +
-      "including status, type, assignee, labels, and description. Read-only.",
+      "including status, type, assignee, labels, and description. Also saves the ticket " +
+      "to .jira/<KEY>/ in the open workspace: a Markdown file with the details and " +
+      "comments, plus every attachment downloaded. Read-only.",
     inputSchema: {
       issueKey: z
         .string()
@@ -98,6 +100,12 @@ server.registerTool(
           attachmentsDir: saved.attachmentsDir,
           attachmentsSaved: saved.attachmentsSaved,
           attachmentErrors: saved.attachmentErrors,
+          commentsSaved: saved.commentsSaved,
+          commentError: saved.commentError,
+          savedInWorkspace: saved.savedInWorkspace,
+          workspace: saved.workspace,
+          locationAssumed: saved.locationAssumed,
+          locationReason: saved.locationReason,
         },
       });
     } catch (err) {

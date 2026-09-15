@@ -11,28 +11,51 @@ create, update, transition, comment on, or delete anything in Jira.
 
 | Tool | What it does |
 |---|---|
-| `get_issue` | Fetch one issue by key (e.g. `PROJ-123`) and save it to disk (see below). Returns the summary plus where it was saved. |
+| `get_issue` | Fetch one issue by key (e.g. `PROJ-123`) and save it to `.jira/<KEY>/` in your workspace - details, comments and all attachments (see below). Returns the summary plus where it was saved. |
 | `search_issues` | Search issues with a JQL query. Returns a capped list; **does not save anything to disk**. |
 | `get_issue_comments` | Fetch an issue's comments, newest first, as plain text. |
 | `get_attachment` | Download a single attachment by id to `_downloads/` under the data folder; returns a clickable `file://` link plus metadata. |
 
-## Fetched tickets are saved to disk
+## Fetched tickets are saved into your workspace
 
-Whenever a ticket is fetched with `get_issue`, the power writes it under the
-data folder (`search_issues` is discovery only and saves nothing):
+Whenever a ticket is fetched with `get_issue`, the power writes it into a
+`.jira` folder in the workspace you have open, so it shows up in your file tree
+(`search_issues` is discovery only and saves nothing):
 
 ```
-~/.kiro/powers/data/kiro-power-jira-cloud/
+<workspace>/.jira/
+  .gitignore              # ignores everything here, so tickets are never committed
   <TICKET-ID>/
-    <TICKET-ID>.md        # ticket details as Markdown
+    <TICKET-ID>.md        # details, description and comments as Markdown
     attachments/          # every attachment on the ticket, downloaded
       <filename>
 ```
 
 The Markdown captures the key fields (status, type, assignee, labels, dates),
-the description, and a linked list of the downloaded attachments. All attachments
-on a ticket are downloaded automatically. Re-fetching a ticket rewrites its
-folder with the latest details.
+the description, a linked list of the downloaded attachments, and the ticket's
+comments (newest first). All attachments are downloaded automatically.
+Re-fetching a ticket rewrites its folder with the latest details.
+
+A `.gitignore` is created inside `.jira` on first use so ticket data stays local
+and is never committed.
+
+### How the workspace is detected
+
+A power's MCP server is launched with its working directory set to the plugin
+root and receives no workspace path, so the power reads Kiro's own window state
+file to find the folder you have open. Two consequences worth knowing:
+
+- If **several** workspace windows are open, the power cannot tell which one the
+  request came from. It uses the active window, or otherwise the most recently
+  opened folder, and reports `locationAssumed: true` with the reason so you can
+  see the assumption it made.
+- If the workspace cannot be determined at all, the ticket is saved under the
+  power's data folder (`~/.kiro/powers/data/kiro-power-jira-cloud/`) instead, and
+  the response says so. Nothing is lost.
+
+Detection relies on Kiro's internal window state file rather than a documented
+API, so a future Kiro change could break it - in which case saving falls back to
+the data folder as above.
 
 ## Prerequisites
 
