@@ -33,6 +33,13 @@ export function adfToText(node) {
 export function tidyText(text, maxLength = 4000) {
   const cleaned = (text ?? "")
     .replace(/\r/g, "")
+    // Normalise common non-ASCII punctuation to plain ASCII so the output stays
+    // clean UTF-8 without stray smart-quote / dash / nbsp artifacts.
+    .replace(/\u00a0/g, " ")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[\u2013\u2014]/g, "-")
+    .replace(/\u2026/g, "...")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
   return cleaned.length > maxLength ? cleaned.slice(0, maxLength) + "\n...[truncated]" : cleaned;

@@ -11,10 +11,28 @@ create, update, transition, comment on, or delete anything in Jira.
 
 | Tool | What it does |
 |---|---|
-| `get_issue` | Fetch one issue by key (e.g. `PROJ-123`) as a compact summary, including its attachments (with ids). |
-| `search_issues` | Search issues with a JQL query, returns a capped list. |
+| `get_issue` | Fetch one issue by key (e.g. `PROJ-123`) and save it to disk (see below). Returns the summary plus where it was saved. |
+| `search_issues` | Search issues with a JQL query; saves each matched ticket to disk too. Returns a capped list. |
 | `get_issue_comments` | Fetch an issue's comments, newest first, as plain text. |
-| `get_attachment` | Download an attachment by id. The file is saved locally and a clickable `file://` link plus metadata is returned. |
+| `get_attachment` | Download a single attachment by id to `_downloads/` under the data folder; returns a clickable `file://` link plus metadata. |
+
+## Fetched tickets are saved to disk
+
+Whenever a ticket is fetched (`get_issue`, or each result of `search_issues`),
+the power writes it under the data folder:
+
+```
+~/.kiro/powers/data/kiro-power-jira-cloud/
+  <TICKET-ID>/
+    <TICKET-ID>.md        # ticket details as Markdown
+    attachments/          # every attachment on the ticket, downloaded
+      <filename>
+```
+
+The Markdown captures the key fields (status, type, assignee, labels, dates),
+the description, and a linked list of the downloaded attachments. All attachments
+on a ticket are downloaded automatically. Re-fetching a ticket rewrites its
+folder with the latest details.
 
 ## Prerequisites
 

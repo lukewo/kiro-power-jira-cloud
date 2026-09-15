@@ -15,20 +15,20 @@
 import "./trust-system-ca.js";
 
 import { writeFileSync, mkdirSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { readConfig, JiraClient } from "./jira-client.js";
+import { readConfig, JiraClient, CONFIG_DIR } from "./jira-client.js";
 import { summariseIssue, summariseComment } from "./format.js";
+import { saveTicket } from "./ticket-store.js";
 
-// Downloaded attachments are saved here, under the Power folder (server/../attachments),
-// so the returned link is stable and easy to find. This directory sits inside
-// .kiro, which is git-ignored, so downloads never get committed.
-const ATTACHMENTS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "attachments");
+// Ad-hoc single-attachment downloads (via the get_attachment tool) land here,
+// under the data dir - never inside the power folder, which is wiped on update.
+const ATTACHMENTS_DIR = join(CONFIG_DIR, "_downloads");
 
 // Maps common content types to a file extension, used only when the caller does
 // not supply a filename, so the saved file still opens in the right viewer.
@@ -86,7 +86,20 @@ server.registerTool(
   async ({ issueKey }) => {
     try {
       const issue = await client.getIssue(issueKey.trim());
-      return toolResult(summariseIssue(issue));
+      const summary = summariseIssue(issue);
+      // Persist the ticket: <data>/<ID>/<ID>.md plus <ID>/attachments/* with all
+      // attachments downloaded.
+      const saved = await saveTicket(issue, client);
+      return toolResult({
+        ...summary,
+        saved: {
+          folder: saved.ticketDir,
+          markdown: saved.markdownPath,
+          attachmentsDir: saved.attachmentsDir,
+          attachmentsSaved: saved.attachmentsSaved,
+          attachmentErrors: saved.attachmentErrors,
+        },
+      });
     } catch (err) {
       return toolError(`get_issue failed: ${err.message}`);
     }
@@ -116,6 +129,21 @@ server.registerTool(
     try {
       const result = await client.searchIssues(jql.trim(), cap);
       const issues = Array.isArray(result.issues) ? result.issues : [];
+
+      // Persist every matched ticket. Search results are compact (no
+      // description/attachments), so fetch full detail per hit before saving.
+      const saved = [];
+      const saveErrors = [];
+      for (const hit of issues) {
+        try {
+          const full = await client.getIssue(hit.key);
+          const s = await saveTicket(full, client);
+          saved.push({ key: hit.key, folder: s.ticketDir, attachmentsSaved: s.attachmentsSaved });
+        } catch (err) {
+          saveErrors.push(`${hit.key}: ${err.message}`);
+        }
+      }
+
       return toolResult({
         // The /search/jql endpoint returns a page without a grand total; it
         // signals more results via nextPageToken rather than a total count.
@@ -133,6 +161,8 @@ server.registerTool(
             updated: f.updated ?? null,
           };
         }),
+        saved,
+        saveErrors,
       });
     } catch (err) {
       return toolError(`search_issues failed: ${err.message}`);
